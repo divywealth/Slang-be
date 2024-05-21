@@ -7,3 +7,11 @@ export class UpdatePasswordDto {
   @IsNotEmpty()
   newPassword: string;
 }
+
+export class ResetPasswordDto {
+    @IsNotEmpty()
+    email: string;
+
+    @IsNotEmpty()
+    password: string
+}

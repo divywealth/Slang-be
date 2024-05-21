@@ -8,7 +8,8 @@ import { Model } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
 import { BadRequest } from 'src/services/BadRequestResponse';
 import * as bcrypt from 'bcrypt';
-import { UpdatePasswordDto } from './dto/update-password.dto';
+import { ResetPasswordDto, UpdatePasswordDto } from './dto/update-password.dto';
+import { CodeService } from 'src/code/code.service';
 
 @Injectable()
 export class AuthenticationService {
@@ -79,59 +80,76 @@ export class AuthenticationService {
 
   registerUserWithFacebook() {}
 
-  async updatePassword( updatePasswordDto: UpdatePasswordDto, user: User) {
+  async updatePassword(updatePasswordDto: UpdatePasswordDto, user: User) {
     try {
       if (!(await bcrypt.compare(updatePasswordDto.password, user.password))) {
-        throw BadRequest("Wrong Password")
+        throw BadRequest('Wrong Password');
       }
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(
         updatePasswordDto.newPassword,
         saltRounds,
       );
-      return this.userModel.findOneAndDelete({id: user.id}, { password: hashedPassword })
+      return this.userModel.findOneAndDelete(
+        { id: user.id },
+        { password: hashedPassword },
+      );
     } catch (error) {
-      throw error.message
+      throw error.message;
     }
   }
 
   async updateEmail(email: string, user: User) {
     try {
-      
+      const updateEmail = await this.userModel.findOneAndUpdate(
+        { id: user.id },
+        { email: email },
+      );
+      if (updateEmail) {
+        return updateEmail;
+      }
+      throw BadRequest('email not updated');
     } catch (error) {
-      throw error.message
+      throw error.message;
     }
   }
 
-  async updateUsername(username: string, userId: number) {
+  async updateUsername(username: string, user: User) {
     try {
-      this.userModel.findByIdAndUpdate({userId}, {username: username})
+      const updateUsername = this.userModel.findByIdAndUpdate(
+        { id: user.id },
+        { username: username },
+      );
+      if (updateUsername) {
+        return updateUsername;
+      }
+      throw BadRequest('username not updated');
     } catch (error) {
-      throw error.message
+      throw error.message;
     }
   }
 
-  async sendCode () {
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
     try {
-      
+      if (!resetPasswordDto.password) {
+        return BadRequest('Password is required');
+      }
+      if (resetPasswordDto.password.length < 5) {
+        return BadRequest(
+          'Password is too short. Atleast 6 characters required',
+        );
+      }
+      const saltOrRounds = 10;
+      const password = await bcrypt.hash(
+        resetPasswordDto.password,
+        saltOrRounds,
+      );
+      return await this.userModel.findOneAndUpdate(
+        { email: resetPasswordDto.email },
+        { password: password },
+      );
     } catch (error) {
-      throw error.message
-    }
-  }
-
-  async verifyCode () {
-    try {
-      
-    } catch (error) {
-      throw error.message
-    }
-  }
-
-  async resetPassword() {
-    try {
-      
-    } catch (error) {
-      throw error.message
+      throw error.message;
     }
   }
 

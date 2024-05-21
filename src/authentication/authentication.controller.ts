@@ -3,18 +3,20 @@ import { AuthenticationService } from './authentication.service';
 import { CreateAuthenticationDto } from './dto/create-authentication.dto';
 import { UpdateAuthenticationDto } from './dto/update-authentication.dto';
 import { loginUserDto } from './dto/login-user.dto';
-import { UpdatePasswordDto } from './dto/update-password.dto';
+import { ResetPasswordDto, UpdatePasswordDto } from './dto/update-password.dto';
 import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
 
-@Controller('authentication')
+@Controller({
+  version: '1',
+})
 export class AuthenticationController {
   constructor(
     private readonly authenticationService: AuthenticationService,
     private jwtService: JwtService
     ) {}
 
-  @Post()
+  @Post('user')
   @UsePipes(ValidationPipe)
   create(@Body() createAuthenticationDto: CreateAuthenticationDto) {
     try {
@@ -24,7 +26,7 @@ export class AuthenticationController {
     }
   }
 
-  @Post()
+  @Post('login')
   login(@Body() loginUserDto: loginUserDto) {
     try {
       return this.authenticationService.login(loginUserDto);
@@ -48,7 +50,7 @@ export class AuthenticationController {
   //   return this.authenticationService.update(+id, updateAuthenticationDto);
   // }
   
-  @Put('change-password')
+  @Put('update-password')
   @UsePipes(ValidationPipe)
   async updatePassword(@Body() updatePasswordDto: UpdatePasswordDto, @Req() request: Request) {
     try {
@@ -62,7 +64,7 @@ export class AuthenticationController {
     }
   }
 
-  @Put('change-email')
+  @Put('update-email')
   async updateEmail(@Req() request: Request, @Body() email: string) {
     try {
       const token = request.headers.authorization.replace('Bearer ', '')
@@ -89,33 +91,26 @@ export class AuthenticationController {
     }
   }
 
-  @Put('change-password')
+  @Put('update-username')
   async updateUsername(@Body() username: string, @Req() request: Request) {
     try {
       const token = request.headers.authorization.replace('Bearer ', '')
       const decodedUser = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET
       })
-      const userId = decodedUser.user.id
-      return this.authenticationService.updateUsername(username, userId)
+      return this.authenticationService.updateUsername(username, decodedUser)
     } catch (error) {
       throw error.message
     }
   }
 
-  @Post('forgetpassword')
-  SendCode() {
-     
-  }
-
-  @Post('verifypasscode')
-  verifyCode() {
-    
-  }
-
   @Put('reset-password')
-  resetPassword() {
-
+  resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    try {
+      return this.authenticationService.resetPassword(resetPasswordDto)
+    } catch (error) {
+      throw error.message
+    }
   }
 
   @Delete(':id')
