@@ -32,18 +32,18 @@ export class AuthenticationService {
           createAuthenticationDto.password,
           saltrounds,
         );
-        const information2save = {
+        const newUser = new this.userModel({
           firstname: createAuthenticationDto.firstname,
           lastname: createAuthenticationDto.lastname,
           email: createAuthenticationDto.email,
           username: createAuthenticationDto.username,
           password: hashedPassword,
-        };
-        const createUser = new this.userModel(information2save);
-        const newUser = await createUser.save();
+        });
+        await newUser.save();
+        const access_token = await this.jwtService.signAsync({ newUser });
         return {
           user: newUser,
-          access_token: await this.jwtService.signAsync({ newUser }),
+          access_token: access_token,
         };
       }
     } catch (error) {
@@ -62,9 +62,11 @@ export class AuthenticationService {
       if (!existingUser) {
         throw BadRequest('email dosent have an account try signing up');
       }
-      if (
-        !(await bcrypt.compare(loginUserDto.password, existingUser.password))
-      ) {
+      const isPasswordValid = await bcrypt.compare(
+        loginUserDto.password,
+        existingUser.password,
+      );
+      if (!isPasswordValid) {
         throw BadRequest('Wrong Password');
       }
       return {
@@ -91,7 +93,7 @@ export class AuthenticationService {
         saltRounds,
       );
       return this.userModel.findOneAndDelete(
-        { id: user.id },
+        { id: user._id },
         { password: hashedPassword },
       );
     } catch (error) {
@@ -102,7 +104,7 @@ export class AuthenticationService {
   async updateEmail(email: string, user: User) {
     try {
       const updateEmail = await this.userModel.findOneAndUpdate(
-        { id: user.id },
+        { id: user._id },
         { email: email },
       );
       if (updateEmail) {
@@ -117,7 +119,7 @@ export class AuthenticationService {
   async updateUsername(username: string, user: User) {
     try {
       const updateUsername = this.userModel.findByIdAndUpdate(
-        { id: user.id },
+        { id: user._id },
         { username: username },
       );
       if (updateUsername) {

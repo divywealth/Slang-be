@@ -19,7 +19,7 @@ export class UserController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     try {
-      return this.userService.findOne(+id);
+      return this.userService.findOne(id);
     } catch (error) {
       throw error.message
     }

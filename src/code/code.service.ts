@@ -21,12 +21,12 @@ export class CodeService {
   async createCodeForEmail(email: string, user: User) {
     try {
       const code = randomNumber(6);
-      const existingUserCode =  await this.codeModel.findOne({user: user})
+      const existingUserCode =  await this.codeModel.findOne({user: user._id})
       if (existingUserCode) {
-        await this.codeModel.deleteOne({id: existingUserCode.id})
+        await this.codeModel.deleteOne({_id: existingUserCode._id})
       }
       const createdCode = new this.codeModel({
-        user: user,
+        user: user._id,
         code: code
       })
       const emailPayload = {
@@ -34,7 +34,7 @@ export class CodeService {
         subject: 'Slang Reset Password',
         from: 'christianonuora1@gmail.com',
         text: 'Hello World from Slang.com',
-        html: `<h1>Hello ${user.firstname} your verification code is ${code}/h1>`,
+        html: `<h1>Hello ${user.firstname} your verification code is ${code}</h1>`,
       };
       await this.notificationService.emailNotificationService(emailPayload)
       return await createdCode.save()
@@ -45,34 +45,38 @@ export class CodeService {
   }// Check this guy well
 
   async createCodeForPassword(email: string) {
-    const existingUser = await this.userModel.findOne({email: email})
-    if (!existingUser) {
-      throw BadRequest("email dosen't have an account")
+    try {
+      const existingUser = await this.userModel.findOne({email: email})
+      if (!existingUser) {
+        throw BadRequest("email dosen't have an account")
+      }
+      const existingUserCode =  await this.codeModel.findOne({user: existingUser._id})
+      if(existingUserCode) {
+        await this.codeModel.deleteOne({_id: existingUserCode._id})
+      }
+      const code = randomNumber(6);
+      const createdCode = new this.codeModel({
+        user: existingUser._id,
+        code: code
+      })
+      const emailPayload = {
+        to: email,
+        subject: 'Slang Reset Password',
+        from: 'christianonuora1@gmail.com',
+        text: 'Hello World from Slang.com',
+        html: `<h1>Hello ${existingUser.firstname} your verification code is ${code}</h1>`,
+      };
+      await this.notificationService.emailNotificationService(emailPayload)
+      return await createdCode.save()
+    } catch (error) {
+      throw error.message
     }
-    const existingUserCode =  await this.codeModel.findOne({user: existingUser})
-    if(existingUserCode) {
-      await this.codeModel.deleteOne({id: existingUserCode.id})
-    }
-    const code = randomNumber(6);
-    const createdCode = new this.codeModel({
-      user: existingUser,
-      code: code
-    })
-    const emailPayload = {
-      to: email,
-      subject: 'Slang Reset Password',
-      from: 'christianonuora1@gmail.com',
-      text: 'Hello World from Slang.com',
-      html: `<h1>Hello ${existingUser.firstname} your verification code is ${code}/h1>`,
-    };
-    await this.notificationService.emailNotificationService(emailPayload)
-    return await createdCode.save()
   }
 
-  async verifyCode (code: string, user: string) {
+  async verifyCode (code: string, user: User) {
     try {
       const existingCode = await this.codeModel.findOne({
-        user: user,
+        user: user._id,
         code: code
       })
       if(!existingCode) {

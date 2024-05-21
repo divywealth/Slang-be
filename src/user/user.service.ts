@@ -7,26 +7,24 @@ import { Model } from 'mongoose';
 
 @Injectable()
 export class UserService {
-
   constructor(
     @InjectModel(User.name)
-    private readonly userModel: Model<User>
+    private readonly userModel: Model<User>,
   ) {}
 
   async findAll() {
     try {
-      return await this.userModel.find()
+      return await this.userModel.find();
     } catch (error) {
-      throw error.message
+      throw error.message;
     }
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     try {
-      return await this.userModel.findById(id)
+      return await this.userModel.findById(id);
     } catch (error) {
-      throw error.message
+      throw error.message;
     }
   }
-
 }

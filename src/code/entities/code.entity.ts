@@ -7,7 +7,7 @@ export type CodeDocument = HydratedDocument<Code>;
 @Schema()
 export class Code {
   @Prop({ type: mongoose.Schema.Types.ObjectId, auto: true })
-  id: string;
+  _id: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => User })
   user: User;

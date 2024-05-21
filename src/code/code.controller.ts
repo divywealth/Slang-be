@@ -21,8 +21,7 @@ export class CodeController {
       const decodedToken = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET
       })
-      const userId = decodedToken.user.id
-      return this.codeService.verifyCode(code, userId)
+      return this.codeService.verifyCode(code, decodedToken)
     } catch (error) {
       throw error.message;
     }
