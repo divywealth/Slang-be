@@ -11,7 +11,7 @@ export enum Status {
 @Schema({ timestamps: true })
 export class Slang {
   @Prop({ type: mongoose.Schema.Types.ObjectId, auto: true })
-  id: string;
+  _id: string;
 
   @Prop({ required: true })
   slang: string;
@@ -22,7 +22,7 @@ export class Slang {
   @Prop({ type: String, enum: Status, default: Status.PENDING })
   status: Status;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true})
   user: User;
 }
 

@@ -7,6 +7,7 @@ import { SlangModule } from './slang/slang.module';
 import { PreslangModule } from './preslang/preslang.module';
 import { CodeModule } from './code/code.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ReactionModule } from './reaction/reaction.module';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { MongooseModule } from '@nestjs/mongoose';
     CloudinaryModule,
     SlangModule,
     PreslangModule,
-    CodeModule
+    CodeModule,
+    ReactionModule
   ],
   controllers: [],
   providers: [],

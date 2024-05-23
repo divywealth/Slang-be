@@ -10,6 +10,7 @@ import { BadRequest } from 'src/services/BadRequestResponse';
 import * as bcrypt from 'bcrypt';
 import { ResetPasswordDto, UpdatePasswordDto } from './dto/update-password.dto';
 import { CodeService } from 'src/code/code.service';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class AuthenticationService {
@@ -17,6 +18,7 @@ export class AuthenticationService {
     @InjectModel(User.name)
     private readonly userModel: Model<User>,
     private jwtService: JwtService,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   async create(createAuthenticationDto: CreateAuthenticationDto) {
@@ -39,8 +41,10 @@ export class AuthenticationService {
           username: createAuthenticationDto.username,
           password: hashedPassword,
         });
-        await newUser.save();
-        const access_token = await this.jwtService.signAsync({ newUser });
+        const createdUser = await newUser.save();
+        const access_token = await this.jwtService.signAsync({
+          user: createdUser,
+        });
         return {
           user: newUser,
           access_token: access_token,
@@ -92,9 +96,10 @@ export class AuthenticationService {
         updatePasswordDto.newPassword,
         saltRounds,
       );
-      return this.userModel.findOneAndDelete(
-        { id: user._id },
+      return this.userModel.findOneAndUpdate(
+        { _id: user._id },
         { password: hashedPassword },
+        { new: true },
       );
     } catch (error) {
       throw error.message;
@@ -103,9 +108,10 @@ export class AuthenticationService {
 
   async updateEmail(email: string, user: User) {
     try {
-      const updateEmail = await this.userModel.findOneAndUpdate(
-        { id: user._id },
+      const updateEmail = await this.userModel.findByIdAndUpdate(
+        user._id,
         { email: email },
+        { new: true },
       );
       if (updateEmail) {
         return updateEmail;
@@ -119,8 +125,9 @@ export class AuthenticationService {
   async updateUsername(username: string, user: User) {
     try {
       const updateUsername = this.userModel.findByIdAndUpdate(
-        { id: user._id },
+        user._id,
         { username: username },
+        { new: true },
       );
       if (updateUsername) {
         return updateUsername;
@@ -155,6 +162,21 @@ export class AuthenticationService {
     }
   }
 
+  async updateProfilepic(user: User, file: Express.Multer.File) {
+    try {
+      const uploadImage = await this.cloudinaryService.uploadImage(file);
+      console.log(uploadImage.url);
+      const update = this.userModel.findByIdAndUpdate(user._id, {
+        profilepic: uploadImage.url,
+      }, { new: true });
+      if (!update) {
+        return BadRequest('Not updated')
+      }
+      return update
+    } catch (error) {
+      throw error.message
+    }
+  }
   // update(id: number, updateAuthenticationDto: UpdateAuthenticationDto) {
   //   return `This action updates a #${id} authentication`;
   // }

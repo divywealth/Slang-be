@@ -1,52 +1,69 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+} from '@nestjs/common';
 import { CodeService } from './code.service';
 import { CreateCodeDto } from './dto/create-code.dto';
 import { UpdateCodeDto } from './dto/update-code.dto';
 import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
+import { UserService } from 'src/user/user.service';
 
 @Controller({
-  version: '1'
+  version: '1',
 })
 export class CodeController {
   constructor(
     private readonly codeService: CodeService,
-    private jwtService: JwtService
-    ) {}
+    private jwtService: JwtService,
+    private readonly userService: UserService,
+  ) {}
 
   @Get('verify-code')
-  async verifyCode(@Body() code: string, @Req() request: Request) {
+  async verifyCode(@Body('code') code: string, @Req() request: Request) {
     try {
       const token = request.headers.authorization.replace('Bearer ', '');
       const decodedToken = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET
-      })
-      return this.codeService.verifyCode(code, decodedToken)
+        secret: process.env.JWT_SECRET,
+      });
+      const userToken = decodedToken.user._id;
+      const user = await this.userService.findOne(userToken);
+      return this.codeService.verifyCode(code, user);
     } catch (error) {
       throw error.message;
     }
   }
 
-  @Post()
-  async createCodeForEmail(@Body() email: string, @Req() request: Request) {
+  @Post('email-code')
+  async createCodeForEmail(
+    @Body('email') email: string,
+    @Req() request: Request,
+  ) {
     try {
       const token = request.headers.authorization.replace('Bearer ', '');
-        const decodedToken = await this.jwtService.verifyAsync(token, {
-          secret: process.env.JWT_SECRET
-        })
-        const userId = decodedToken
-      return this.codeService.createCodeForEmail(email, userId);
+      const decodedToken = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET,
+      });
+      const userToken = decodedToken.user._id;
+      const user = await this.userService.findOne(userToken);
+      return this.codeService.createCodeForEmail(email, user);
     } catch (error) {
-      throw error.message
+      throw error.message;
     }
   }
 
-  @Post()
-  async createCodeForPassword(@Body() email: string) {
+  @Post('password-code')
+  async createCodeForPassword(@Body('email') email: string) {
     try {
-      return this.codeService.createCodeForPassword(email)
+      return this.codeService.createCodeForPassword(email);
     } catch (error) {
-      throw error.message
+      throw error.message;
     }
   }
 

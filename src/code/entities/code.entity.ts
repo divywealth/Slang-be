@@ -4,7 +4,7 @@ import { User } from 'src/user/entities/user.entity';
 
 export type CodeDocument = HydratedDocument<Code>;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Code {
   @Prop({ type: mongoose.Schema.Types.ObjectId, auto: true })
   _id: string;

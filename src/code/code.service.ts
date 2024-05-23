@@ -5,21 +5,25 @@ import { CreateCodeDto } from './dto/create-code.dto';
 import { UpdateCodeDto } from './dto/update-code.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Code } from './entities/code.entity';
-import mongoose, { mongo } from 'mongoose';
+import { Model } from 'mongoose';
 import { User } from 'src/user/entities/user.entity';
 import { BadRequest } from 'src/services/BadRequestResponse';
+import * as mongoose from 'mongoose';
 
 @Injectable()
 export class CodeService {
   constructor (
     @InjectModel(Code.name)
-    private codeModel: mongoose.Model<Code>,
-    private userModel: mongoose.Model<User>,
+    private readonly codeModel: mongoose.Model<Code>,
+    @InjectModel(User.name)
+    private readonly userModel: mongoose.Model<User>,
+    
     private readonly notificationService: NotificationService
   ) {}
 
   async createCodeForEmail(email: string, user: User) {
     try {
+      console.log(email)
       const code = randomNumber(6);
       const existingUserCode =  await this.codeModel.findOne({user: user._id})
       if (existingUserCode) {
@@ -33,10 +37,12 @@ export class CodeService {
         to: email,
         subject: 'Slang Reset Password',
         from: 'christianonuora1@gmail.com',
-        text: 'Hello World from Slang.com',
+        text: 'Slang.com',
         html: `<h1>Hello ${user.firstname} your verification code is ${code}</h1>`,
       };
-      await this.notificationService.emailNotificationService(emailPayload)
+      console.log(emailPayload)
+      const sentEmail = await this.notificationService.emailNotificationService(emailPayload)
+      console.log(sentEmail)
       return await createdCode.save()
 
     } catch (error) {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UsePipes, ValidationPipe, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UsePipes, ValidationPipe, Req, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { CreateAuthenticationDto } from './dto/create-authentication.dto';
 import { UpdateAuthenticationDto } from './dto/update-authentication.dto';
@@ -6,6 +6,9 @@ import { loginUserDto } from './dto/login-user.dto';
 import { ResetPasswordDto, UpdatePasswordDto } from './dto/update-password.dto';
 import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
+import { ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { FileUploadDto } from './dto/file-upload-dto.dto';
 
 @Controller({
   version: '1',
@@ -15,6 +18,12 @@ export class AuthenticationController {
     private readonly authenticationService: AuthenticationService,
     private jwtService: JwtService
     ) {}
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+      description: 'some description',
+      type: FileUploadDto
+    })
+
 
   @Post('user')
   @UsePipes(ValidationPipe)
@@ -58,20 +67,22 @@ export class AuthenticationController {
       const decodedUser = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET,
       });
-      return this.authenticationService.updatePassword(updatePasswordDto, decodedUser)
+      const user = decodedUser.user
+      return this.authenticationService.updatePassword(updatePasswordDto, user)
     } catch (error) {
       throw error.message
     }
   }
 
   @Put('update-email')
-  async updateEmail(@Req() request: Request, @Body() email: string) {
+  async updateEmail(@Req() request: Request, @Body('email') email: string) {
     try {
       const token = request.headers.authorization.replace('Bearer ', '')
       const decodedUser = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET
       })
-      return this.authenticationService.updateEmail(email, decodedUser)
+      const user = decodedUser.user
+      return this.authenticationService.updateEmail(email, user)
     } catch (error) {
       throw error.message
     }
@@ -82,29 +93,37 @@ export class AuthenticationController {
     
   // }
 
-  @Patch(':id')
-  async updateProfilePic() {
+  @Patch('update-profilepic')
+  @UseInterceptors(FileInterceptor('file'))
+  async updateProfilePic(@Req() request: Request, @UploadedFile() file: Express.Multer.File) {
     try {
-
+      const token = request.headers.authorization.replace('Bearer ', '')
+      const decodedUser = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET
+      })
+      const user = decodedUser.user
+      return this.authenticationService.updateProfilepic(user, file)
     } catch (error) {
       throw error.message;
     }
   }
 
   @Put('update-username')
-  async updateUsername(@Body() username: string, @Req() request: Request) {
+  async updateUsername(@Body('username') username: string, @Req() request: Request) {
     try {
       const token = request.headers.authorization.replace('Bearer ', '')
       const decodedUser = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET
       })
-      return this.authenticationService.updateUsername(username, decodedUser)
+      const user = decodedUser.user
+      return this.authenticationService.updateUsername(username, user)
     } catch (error) {
       throw error.message
     }
   }
 
   @Put('reset-password')
+  @UsePipes(ValidationPipe)
   resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     try {
       return this.authenticationService.resetPassword(resetPasswordDto)
