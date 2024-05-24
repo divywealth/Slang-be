@@ -15,7 +15,7 @@ import { ReactionModule } from './reaction/reaction.module';
       isGlobal: true,
       envFilePath: `.env/.env.${process.env.NODE_ENV}`
     }),
-    MongooseModule.forRoot('mongodb+srv://looner_user:fordwinwam@loonercluster.oj3oeqg.mongodb.net/slang-local?retryWrites=true&w=majority'),
+    MongooseModule.forRoot(process.env.DB_URI),
     AuthenticationModule,
     UserModule,
     CloudinaryModule,

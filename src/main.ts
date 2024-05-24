@@ -7,7 +7,7 @@ async function bootstrap() {
   app.enableVersioning({
     type: VersioningType.URI
   })
-  console.log(process.env.NODE_ENV, process.env.JWT_SECRET)
+  console.log(process.env.NODE_ENV, process.env.DB_URI)
   await app.listen(3000);
 }
 bootstrap();
