@@ -45,6 +45,10 @@ export class ReactionService {
         slang: slang._id,
         react: { $ne: 'Dislikes'}
       })
+      if (slangLikes) {
+        return slangLikes
+      }
+      return 'Slang has no likes'
     } catch (error) {
       throw error.message;
     }
@@ -55,6 +59,10 @@ export class ReactionService {
         slang: slang._id,
         react: { $ne: 'like'}
       })
+      if ( slangDislikes ) {
+        return slangDislikes
+      }
+      return 'Slang has no dislikes'
     } catch (error) {
       throw error.message;
     }

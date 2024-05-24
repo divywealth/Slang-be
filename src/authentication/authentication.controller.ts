@@ -102,6 +102,7 @@ export class AuthenticationController {
         secret: process.env.JWT_SECRET
       })
       const user = decodedUser.user
+      console.log(file)
       return this.authenticationService.updateProfilepic(user, file)
     } catch (error) {
       throw error.message;

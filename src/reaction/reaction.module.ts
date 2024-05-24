@@ -9,13 +9,15 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { SlangService } from 'src/slang/slang.service';
 import { UserService } from 'src/user/user.service';
+import { Code, CodeSchema } from 'src/code/entities/code.entity';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Reaction.name, schema: ReactionSchema },
       { name: User.name, schema: UserSchema },
-      { name: Slang.name, schema: SlangSchema}
+      { name: Slang.name, schema: SlangSchema},
+      { name: Code.name, schema: CodeSchema },
     ]),
     ConfigModule.forRoot({
       isGlobal: true,

@@ -13,7 +13,7 @@ export class CloudinaryService {
     return new Promise((resolve, reject) => {
       const upload = v2.uploader.upload_stream(
         {
-          folder: 'Carashop',
+          folder: 'Slang',
           public_id: fileName
         },
         (error, result) => {

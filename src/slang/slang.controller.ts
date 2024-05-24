@@ -91,7 +91,7 @@ export class SlangController {
     }
   }
 
-  @Get('users/:userId/slangs')
+  @Get('users/:userId/approvedslangs')
   async getuserApprovedSlangs(
     @Param('userId') userId: string,
     @Req() request: Request,
@@ -106,7 +106,7 @@ export class SlangController {
       return this.slangService.getUserApprovedSlangs(user)
   }
 
-  @Get('users/:userId/slangs')
+  @Get('users/:userId/pendingslangs')
   async getuserPendingSlangs(
     @Param('userId') userId: string,
     @Req() request: Request,
