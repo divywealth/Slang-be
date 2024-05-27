@@ -1,3 +1,4 @@
+import { UserService } from './../user/user.service';
 import { Module } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { AuthenticationController } from './authentication.controller';
@@ -23,6 +24,6 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
     })
   ],
   controllers: [AuthenticationController],
-  providers: [AuthenticationService, CloudinaryService]
+  providers: [AuthenticationService, CloudinaryService, UserService], 
 })
 export class AuthenticationModule {}

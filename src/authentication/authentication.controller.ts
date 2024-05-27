@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FileUploadDto } from './dto/file-upload-dto.dto';
+import { UserService } from 'src/user/user.service';
 
 @Controller({
   version: '1',
@@ -16,7 +17,8 @@ import { FileUploadDto } from './dto/file-upload-dto.dto';
 export class AuthenticationController {
   constructor(
     private readonly authenticationService: AuthenticationService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private readonly userService: UserService
     ) {}
     @ApiConsumes('multipart/form-data')
     @ApiBody({
@@ -67,8 +69,9 @@ export class AuthenticationController {
       const decodedUser = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET,
       });
-      const user = decodedUser.user
-      return this.authenticationService.updatePassword(updatePasswordDto, user)
+      const userId = decodedUser.user._id;
+      const existingUser = await this.userService.findOne(userId);
+      return this.authenticationService.updatePassword(updatePasswordDto, existingUser)
     } catch (error) {
       throw error.message
     }
@@ -81,8 +84,9 @@ export class AuthenticationController {
       const decodedUser = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET
       })
-      const user = decodedUser.user
-      return this.authenticationService.updateEmail(email, user)
+      const userId = decodedUser.user._id
+      const existingUser = await this.userService.findOne(userId);
+      return this.authenticationService.updateEmail(email, existingUser)
     } catch (error) {
       throw error.message
     }
@@ -101,9 +105,9 @@ export class AuthenticationController {
       const decodedUser = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET
       })
-      const user = decodedUser.user
-      console.log(file)
-      return this.authenticationService.updateProfilepic(user, file)
+      const userId = decodedUser.user._id
+      const existingUser = await this.userService.findOne(userId);
+      return this.authenticationService.updateProfilepic(existingUser, file)
     } catch (error) {
       throw error.message;
     }
@@ -116,8 +120,9 @@ export class AuthenticationController {
       const decodedUser = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET
       })
-      const user = decodedUser.user
-      return this.authenticationService.updateUsername(username, user)
+      const userId = decodedUser.user._id
+      const existingUser = await this.userService.findOne(userId);
+      return this.authenticationService.updateUsername(username, existingUser)
     } catch (error) {
       throw error.message
     }

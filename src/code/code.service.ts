@@ -21,7 +21,7 @@ export class CodeService {
     private readonly notificationService: NotificationService
   ) {}
 
-  async createCodeForEmail(email: string, user: User) {
+  }async createCodeForEmail(email: string, user: User) {
     try {
       console.log(email)
       const code = randomNumber(6);
@@ -48,7 +48,7 @@ export class CodeService {
     } catch (error) {
       throw error.message
     }
-  }// Check this guy well
+  // Check this guy well
 
   async createCodeForPassword(email: string) {
     try {
