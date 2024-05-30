@@ -53,8 +53,12 @@ export class ReactionController {
 
   @Get('slang/:slangId/likes')
   async getSlangLikes(@Param('slangId') slangId: string) {
-    const slang = await this.slangService.findOne(slangId)
+    try {
+      const slang = await this.slangService.findOne(slangId)
     return this.reactionService.getSlangLikes(slang)
+    } catch (error) {
+      throw error.message
+    }
   }
 
   @Get('slang/:slangId/dislikes')

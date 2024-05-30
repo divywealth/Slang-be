@@ -142,4 +142,19 @@ export class AuthenticationController {
   remove(@Param('id') id: string) {
     return this.authenticationService.remove(+id);
   }
+
+  @Patch('verify-user')
+  async verifyUser(@Req() request: Request) {
+    try {
+      const token = request.headers.authorization.replace('Bearer ', '')
+      const decodedUser = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET
+      })
+      const userId = decodedUser.user._id
+      const existingUser = await this.userService.findOne(userId);
+      return this.authenticationService.verifyUser(existingUser)
+    } catch (error) {
+      throw error.message
+    }
+  }
 }

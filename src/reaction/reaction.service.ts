@@ -20,7 +20,6 @@ export class ReactionService {
   ) {}
 
   async create(createReactionDto: CreateReactionDto, user: User) {
-    try {
       const existingReaction = await this.reactionModel.findOne({
         user: user._id,
         slang: createReactionDto.slang,
@@ -34,13 +33,9 @@ export class ReactionService {
         react: createReactionDto.react
       })
       return newReaction.save()
-    } catch (error) {
-      throw error.message;
-    }
   }
 
   getSlangLikes(slang: Slang) {
-    try {
       const slangLikes = this.reactionModel.find({
         slang: slang._id,
         react: { $ne: 'Dislikes'}
@@ -49,12 +44,8 @@ export class ReactionService {
         return slangLikes
       }
       return 'Slang has no likes'
-    } catch (error) {
-      throw error.message;
-    }
   }
   getSlangDislikes(slang: Slang) {
-    try {
       const slangDislikes = this.reactionModel.find({
         slang: slang._id,
         react: { $ne: 'like'}
@@ -63,9 +54,6 @@ export class ReactionService {
         return slangDislikes
       }
       return 'Slang has no dislikes'
-    } catch (error) {
-      throw error.message;
-    }
   }
 
   getSlangReaction(slang: Slang) {
@@ -77,19 +65,11 @@ export class ReactionService {
   }
 
   findAll() {
-    try {
       return this.reactionModel.find()
-    } catch (error) {
-      throw error.message
-    }
   }
 
   findOne(id: string) {
-    try {
       return this.reactionModel.findById(id)
-    } catch (error) {
-      throw error.message
-    }
   }
 
   update(id: number, updateReactionDto: UpdateReactionDto) {

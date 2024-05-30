@@ -19,10 +19,10 @@ export class AuthenticationService {
     private readonly userModel: Model<User>,
     private jwtService: JwtService,
     private readonly cloudinaryService: CloudinaryService,
+    private readonly codeService: CodeService
   ) {}
 
   async create(createAuthenticationDto: CreateAuthenticationDto) {
-    try {
       const existingUser = await this.userModel.findOne({
         email: createAuthenticationDto.email,
       });
@@ -42,6 +42,7 @@ export class AuthenticationService {
           password: hashedPassword,
         });
         const createdUser = await newUser.save();
+        await this.codeService.createCodeForEmail(createdUser.email, createdUser);
         const access_token = await this.jwtService.signAsync({
           user: createdUser,
         });
@@ -50,13 +51,9 @@ export class AuthenticationService {
           access_token: access_token,
         };
       }
-    } catch (error) {
-      throw error.message;
-    }
   }
 
   async login(loginUserDto: loginUserDto) {
-    try {
       if (!loginUserDto.email || !loginUserDto.password) {
         throw BadRequest('email and password required');
       }
@@ -73,13 +70,13 @@ export class AuthenticationService {
       if (!isPasswordValid) {
         throw BadRequest('Wrong Password');
       }
+      if (existingUser.status !== 'Verified') {
+        throw BadRequest('User has not verified email');
+      }
       return {
         user: existingUser,
         access_token: this.jwtService.sign({ user: existingUser }),
       };
-    } catch (error) {
-      throw error.message;
-    }
   }
 
   registerUserWithGoogle() {}
@@ -87,7 +84,6 @@ export class AuthenticationService {
   registerUserWithFacebook() {}
 
   async updatePassword(updatePasswordDto: UpdatePasswordDto, user: User) {
-    try {
       if (!(await bcrypt.compare(updatePasswordDto.password, user.password))) {
         throw BadRequest('Wrong Password');
       }
@@ -101,13 +97,9 @@ export class AuthenticationService {
         { password: hashedPassword },
         { new: true },
       );
-    } catch (error) {
-      throw error.message;
-    }
   }
 
   async updateEmail(email: string, user: User) {
-    try {
       const updateEmail = await this.userModel.findByIdAndUpdate(
         user._id,
         { email: email },
@@ -117,13 +109,9 @@ export class AuthenticationService {
         return updateEmail;
       }
       throw BadRequest('email not updated');
-    } catch (error) {
-      throw error.message;
-    }
   }
 
   async updateUsername(username: string, user: User) {
-    try {
       const updateUsername = this.userModel.findByIdAndUpdate(
         user._id,
         { username: username },
@@ -133,13 +121,9 @@ export class AuthenticationService {
         return updateUsername;
       }
       throw BadRequest('username not updated');
-    } catch (error) {
-      throw error.message;
-    }
   }
 
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
-    try {
       if (!resetPasswordDto.password) {
         return BadRequest('Password is required');
       }
@@ -157,13 +141,9 @@ export class AuthenticationService {
         { email: resetPasswordDto.email },
         { password: password },
       );
-    } catch (error) {
-      throw error.message;
-    }
   }
 
   async updateProfilepic(user: User, file: Express.Multer.File) {
-    try {
       const uploadImage = await this.cloudinaryService.uploadImage(file);
       console.log(uploadImage.url);
       const update = this.userModel.findByIdAndUpdate(user._id, {
@@ -173,9 +153,6 @@ export class AuthenticationService {
         return BadRequest('Not updated')
       }
       return update
-    } catch (error) {
-      throw error.message
-    }
   }
   // update(id: number, updateAuthenticationDto: UpdateAuthenticationDto) {
   //   return `This action updates a #${id} authentication`;
@@ -184,4 +161,16 @@ export class AuthenticationService {
   remove(id: number) {
     return `This action removes a #${id} authentication`;
   }
+
+  async verifyUser(user: User) {
+    const existingUser = await this.userModel.findOne({ email: user.email });
+    if (existingUser.status === 'Not Verified') {
+      return await this.userModel.findOneAndUpdate(
+        { email: user.email },
+        { status: 'Verified' },
+        { new: true },
+      );
+    }
+    return BadRequest('User is verified already')
+}
 }

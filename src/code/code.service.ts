@@ -8,6 +8,7 @@ import { Code } from './entities/code.entity';
 import { Model } from 'mongoose';
 import { User } from 'src/user/entities/user.entity';
 import { BadRequest } from 'src/services/BadRequestResponse';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import * as mongoose from 'mongoose';
 
 @Injectable()
@@ -21,8 +22,8 @@ export class CodeService {
     private readonly notificationService: NotificationService
   ) {}
 
-  }async createCodeForEmail(email: string, user: User) {
-    try {
+  
+  async createCodeForEmail(email: string, user: User) {
       console.log(email)
       const code = randomNumber(6);
       const existingUserCode =  await this.codeModel.findOne({user: user._id})
@@ -36,22 +37,17 @@ export class CodeService {
       const emailPayload = {
         to: email,
         subject: 'Slang Reset Password',
-        from: 'christianonuora1@gmail.com',
-        text: 'Slang.com',
-        html: `<h1>Hello ${user.firstname} your verification code is ${code}</h1>`,
+        htmlContent: `<h1>Hello ${user.firstname} your verification code is ${code}</h1>`,
       };
       console.log(emailPayload)
       const sentEmail = await this.notificationService.emailNotificationService(emailPayload)
       console.log(sentEmail)
       return await createdCode.save()
 
-    } catch (error) {
-      throw error.message
-    }
+  }
   // Check this guy well
 
   async createCodeForPassword(email: string) {
-    try {
       const existingUser = await this.userModel.findOne({email: email})
       if (!existingUser) {
         throw BadRequest("email dosen't have an account")
@@ -68,19 +64,13 @@ export class CodeService {
       const emailPayload = {
         to: email,
         subject: 'Slang Reset Password',
-        from: 'christianonuora1@gmail.com',
-        text: 'Hello World from Slang.com',
-        html: `<h1>Hello ${existingUser.firstname} your verification code is ${code}</h1>`,
+        htmlContent: `<h1>Hello ${existingUser.firstname} your verification code is ${code}</h1>`,
       };
       await this.notificationService.emailNotificationService(emailPayload)
       return await createdCode.save()
-    } catch (error) {
-      throw error.message
-    }
   }
 
   async verifyCode (code: string, user: User) {
-    try {
       const existingCode = await this.codeModel.findOne({
         user: user._id,
         code: code
@@ -89,11 +79,18 @@ export class CodeService {
         throw BadRequest('invalid code')
       }
       return 'Code correct'
-    } catch (error) {
-      throw error.message
-    }
   } //Check this well
 
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleCron() {
+    const expiredCodes = await this.codeModel.find({
+      createdAt: { $lt: new Date(Date.now() - 10 * 60 * 1000) },
+    }).exec();
+
+    if (expiredCodes.length > 0) {
+      await this.codeModel.deleteMany({ _id: { $in: expiredCodes.map(code => code._id) } }).exec();
+    }
+  }
   // findAll() {
   //   return `This action returns all code`;
   // }
@@ -115,10 +112,6 @@ export class CodeService {
   // }
 
   removeUserCode(user: string) {
-    try {
       return this.codeModel.findOneAndDelete({user: user})
-    } catch (error) {
-      throw error.message
-    }
   }
 }

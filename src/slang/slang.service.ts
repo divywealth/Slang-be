@@ -15,7 +15,6 @@ export class SlangService {
   ) {}
 
   async create(createSlangDto: CreateSlangDto, user: User) {
-    try {
       console.log(user._id)
       const existingSlang = await this.slangModel.findOne({
         slang: createSlangDto.slang,
@@ -29,59 +28,35 @@ export class SlangService {
         user: user._id,
       });
       return await newSlang.save();
-    } catch (error) {
-      throw error.message;
-    }
   }
 
   async findAll() {
-    try {
       return this.slangModel.find().populate('user');
-    } catch (error) {
-      throw error.message;
-    }
   }
 
   async findOne(id: string) {
-    try {
       return this.slangModel.findById(id);
-    } catch (error) {
-      throw error.message;
-    }
   }
 
   async update(id: string, updateSlangDto: UpdateSlangDto) {
-    try {
       return this.slangModel.findByIdAndUpdate({ _id: id }, updateSlangDto, {
         new: true,
       });
-    } catch (error) {
-      throw error.message;
-    }
   }
 
   async approveSlang(id: string) {
-    try {
       return this.slangModel.findByIdAndUpdate(
         { _id: id },
         { status: 'Approved' },
         { new: true },
       );
-    } catch (error) {
-      throw error.message;
-    }
   }
 
   async remove(id: string) {
-    try {
       return this.slangModel.findByIdAndDelete(id)
-    } catch (error) {
-      throw error.message;
-    }
   }
 
   async getUserPendingSlangs(user: User) {
-    try {
       const userPendingSlangs = await this.slangModel.find({
         user: user._id,
         status: { $ne: 'Approved' },
@@ -90,12 +65,8 @@ export class SlangService {
         return userPendingSlangs
       }
       return []
-    } catch (error) {
-      throw error.message
-    }
   }
   async getUserApprovedSlangs(user: User) {
-    try {
       const userApprovedSlangs = await this.slangModel.find({
         user: user._id,
         status: { $ne: 'Pending' },
@@ -104,8 +75,5 @@ export class SlangService {
         return userApprovedSlangs
       }
       return []
-    } catch (error) {
-      throw error.message
-    }
   }
 }

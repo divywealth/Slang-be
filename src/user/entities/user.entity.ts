@@ -4,6 +4,11 @@ import { Slang } from 'src/slang/entities/slang.entity';
 
 export type UserDocument = HydratedDocument<User>
 
+export enum STATUS {
+  VARIFIED = 'Verified',
+  NOTVERIFIED = 'Not Verified'
+}
+
 @Schema({ timestamps: true })
 export class User {
   @Prop({ type: mongoose.Schema.Types.ObjectId, auto: true })
@@ -26,6 +31,9 @@ export class User {
 
   @Prop({ required: true })
   password: string;
+
+  @Prop({ type: String, enum: STATUS, default: STATUS.NOTVERIFIED})
+  status: STATUS
 
   // @Prop({ default: Date.now })
   // createdAt!: Date;

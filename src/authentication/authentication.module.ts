@@ -8,11 +8,13 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { CodeService } from 'src/code/code.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { Code, CodeSchema } from 'src/code/entities/code.entity';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
-      {name: User.name, schema: UserSchema}
+      {name: User.name, schema: UserSchema},
+      {name: Code.name, schema: CodeSchema}
     ]),
     ConfigModule.forRoot({
       isGlobal: true,
@@ -24,6 +26,6 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
     })
   ],
   controllers: [AuthenticationController],
-  providers: [AuthenticationService, CloudinaryService, UserService], 
+  providers: [AuthenticationService, CloudinaryService, UserService, CodeService], 
 })
 export class AuthenticationModule {}
