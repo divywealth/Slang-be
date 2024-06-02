@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import { CodeService } from 'src/code/code.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { Code, CodeSchema } from 'src/code/entities/code.entity';
+import { NotificationService } from 'src/services/NotificationService';
 
 @Module({
   imports: [
@@ -26,6 +27,6 @@ import { Code, CodeSchema } from 'src/code/entities/code.entity';
     })
   ],
   controllers: [AuthenticationController],
-  providers: [AuthenticationService, CloudinaryService, UserService, CodeService], 
+  providers: [AuthenticationService, CloudinaryService, UserService, CodeService, NotificationService], 
 })
 export class AuthenticationModule {}

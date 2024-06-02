@@ -1,3 +1,4 @@
+import { BadRequest } from './../services/BadRequestResponse';
 import { Injectable } from '@nestjs/common';
 import { CreateSlangDto } from './dto/create-slang.dto';
 import { UpdateSlangDto } from './dto/update-slang.dto';
@@ -36,6 +37,14 @@ export class SlangService {
 
   async findOne(id: string) {
       return this.slangModel.findById(id);
+  }
+
+  async findOneSlang(slang: string) {
+    const existingSlang = await this.slangModel.findOne({slang: slang})
+    if(!existingSlang) {
+      return BadRequest("Slang not available you can try adding the slang if you know the meaning")
+    }
+    return existingSlang
   }
 
   async update(id: string, updateSlangDto: UpdateSlangDto) {

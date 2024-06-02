@@ -138,9 +138,9 @@ export class AuthenticationController {
     }
   }
 
-  @Delete(':id')
+  @Delete('user/:id')
   remove(@Param('id') id: string) {
-    return this.authenticationService.remove(+id);
+    return this.authenticationService.remove(id);
   }
 
   @Patch('verify-user')

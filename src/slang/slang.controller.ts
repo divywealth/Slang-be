@@ -55,6 +55,15 @@ export class SlangController {
     }
   }
 
+  @Get('slang')
+  findOneSlang(@Body('slang') slang: string) {
+    try {
+      return this.slanService.findOneSlang(slang)
+    } catch (error) {
+      throw error.message
+    }
+  }
+
   @Get('slang/:id')
   findOne(@Param('id') id: string) {
     try {

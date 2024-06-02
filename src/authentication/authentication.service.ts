@@ -158,8 +158,8 @@ export class AuthenticationService {
   //   return `This action updates a #${id} authentication`;
   // }
 
-  remove(id: number) {
-    return `This action removes a #${id} authentication`;
+  remove(id: string) {
+    return this.userModel.findByIdAndDelete(id)
   }
 
   async verifyUser(user: User) {
