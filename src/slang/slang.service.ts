@@ -39,7 +39,7 @@ export class SlangService {
       return this.slangModel.findById(id);
   }
 
-  async findOneSlang(slang: string) {
+  async findSlang(slang: string) {
     const existingSlang = await this.slangModel.findOne({slang: slang})
     if(!existingSlang) {
       return BadRequest("Slang not available you can try adding the slang if you know the meaning")
