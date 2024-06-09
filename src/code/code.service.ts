@@ -66,20 +66,21 @@ export class CodeService {
         subject: 'Slang Reset Password',
         htmlContent: `<h1>Hello ${existingUser.firstname} your verification code is ${code}</h1>`,
       };
-      await this.notificationService.emailNotificationService(emailPayload)
-      return await createdCode.save()
+      await this.notificationService.emailNotificationService(emailPayload);
+      const savedCode =  await createdCode.save();
+      const populatedCode = await savedCode.populate('user');
+      return populatedCode;
   }
 
-  async verifyCode (code: string, user: User) {
+  async verifyCode (code: string) {
       const existingCode = await this.codeModel.findOne({
-        user: user._id,
         code: code
       })
       if(!existingCode) {
         throw BadRequest('invalid code')
       }
       return 'Code correct'
-  } //Check this well
+  }
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleCron() {

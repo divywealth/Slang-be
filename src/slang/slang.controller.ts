@@ -55,10 +55,10 @@ export class SlangController {
     }
   }
 
-  @Get('slang')
+  @Post('getslang')
   findSlang(@Body('slang') slang: string) {
     try {
-      return this.slanService.findSlang(slang)
+      return this.slangService.findSlang(slang)
     } catch (error) {
       throw error.message
     }

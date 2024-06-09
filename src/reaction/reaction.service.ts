@@ -25,7 +25,7 @@ export class ReactionService {
         slang: createReactionDto.slang,
       });
       if (existingReaction) {
-        return BadRequest('User has reacted already')
+        await this.reactionModel.deleteOne({_id: existingReaction._id})
       }
       const newReaction = new this.reactionModel({
         slang: createReactionDto.slang,

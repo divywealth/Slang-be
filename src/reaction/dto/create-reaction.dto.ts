@@ -5,7 +5,7 @@ export class CreateReactionDto {
 
     @IsNotEmpty()
     slang: string
-
+r
     @IsNotEmpty()
     react: React
 }

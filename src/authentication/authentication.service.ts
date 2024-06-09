@@ -19,64 +19,62 @@ export class AuthenticationService {
     private readonly userModel: Model<User>,
     private jwtService: JwtService,
     private readonly cloudinaryService: CloudinaryService,
-    private readonly codeService: CodeService
+    private readonly codeService: CodeService,
   ) {}
 
   async create(createAuthenticationDto: CreateAuthenticationDto) {
-      const existingUser = await this.userModel.findOne({
+    const existingUser = await this.userModel.findOne({
+      email: createAuthenticationDto.email,
+    });
+    if (existingUser) {
+      return BadRequest('User has an account');
+    } else {
+      const saltrounds: number = 10;
+      const hashedPassword: string = await bcrypt.hash(
+        createAuthenticationDto.password,
+        saltrounds,
+      );
+      const newUser = new this.userModel({
+        firstname: createAuthenticationDto.firstname,
+        lastname: createAuthenticationDto.lastname,
         email: createAuthenticationDto.email,
+        username: createAuthenticationDto.username,
+        password: hashedPassword,
       });
-      if (existingUser) {
-        return BadRequest('User has an account');
-      } else {
-        const saltrounds: number = 10;
-        const hashedPassword: string = await bcrypt.hash(
-          createAuthenticationDto.password,
-          saltrounds,
-        );
-        const newUser = new this.userModel({
-          firstname: createAuthenticationDto.firstname,
-          lastname: createAuthenticationDto.lastname,
-          email: createAuthenticationDto.email,
-          username: createAuthenticationDto.username,
-          password: hashedPassword,
-        });
-        const createdUser = await newUser.save();
-        await this.codeService.createCodeForEmail(createdUser.email, createdUser);
-        const access_token = await this.jwtService.signAsync({
-          user: createdUser,
-        });
-        return {
-          user: newUser,
-          access_token: access_token,
-        };
-      }
+      const createdUser = await newUser.save();
+      await this.codeService.createCodeForEmail(createdUser.email, createdUser);
+      const access_token = await this.jwtService.signAsync({
+        user: createdUser,
+      });
+      return {
+        user: newUser,
+        access_token: access_token,
+      };
+    }
   }
 
   async login(loginUserDto: loginUserDto) {
-      if (!loginUserDto.email || !loginUserDto.password) {
-        throw BadRequest('email and password required');
-      }
-      const existingUser = await this.userModel.findOne({
-        email: loginUserDto.email,
-      });
-      if (!existingUser) {
-        throw BadRequest('email dosent have an account try signing up');
-      }
-      const isPasswordValid = await bcrypt.compare(
-        loginUserDto.password,
-        existingUser.password,
-      );
-      if (!isPasswordValid) {
-        throw BadRequest('Wrong Password');
-      }
-      if (existingUser.status !== 'Verified') {
-        throw BadRequest('User has not verified email');
-      }
-      return {
-        user: existingUser,
-        access_token: this.jwtService.sign({ user: existingUser }),
-      };
+    if (!loginUserDto.email || !loginUserDto.password) {
+      throw BadRequest('email and password required');
+    }
+    const existingUser = await this.userModel.findOne({
+      email: loginUserDto.email,
+    });
+    if (!existingUser) {
+      throw BadRequest('email dosent have an account try signing up');
+    }
+    const isPasswordValid = await bcrypt.compare(
+      loginUserDto.password,
+      existingUser.password,
+    );
+    if (!isPasswordValid) {
+      throw BadRequest('Wrong Password');
+    }
+    await this.codeService.createCodeForEmail(existingUser.email, existingUser);
+    return {
+      user: existingUser,
+      access_token: this.jwtService.sign({ user: existingUser }),
+    };
   }
 
   registerUserWithGoogle() {}
@@ -84,82 +82,83 @@ export class AuthenticationService {
   registerUserWithFacebook() {}
 
   async updatePassword(updatePasswordDto: UpdatePasswordDto, user: User) {
-      if (!(await bcrypt.compare(updatePasswordDto.password, user.password))) {
-        throw BadRequest('Wrong Password');
-      }
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(
-        updatePasswordDto.newPassword,
-        saltRounds,
-      );
-      return this.userModel.findOneAndUpdate(
-        { _id: user._id },
-        { password: hashedPassword },
-        { new: true },
-      );
+    if (!(await bcrypt.compare(updatePasswordDto.password, user.password))) {
+      throw BadRequest('Wrong Password');
+    }
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(
+      updatePasswordDto.newPassword,
+      saltRounds,
+    );
+    return this.userModel.findOneAndUpdate(
+      { _id: user._id },
+      { password: hashedPassword },
+      { new: true },
+    );
   }
 
   async updateEmail(email: string, user: User) {
-      const updateEmail = await this.userModel.findByIdAndUpdate(
-        user._id,
-        { email: email },
-        { new: true },
-      );
-      if (updateEmail) {
-        return updateEmail;
-      }
-      throw BadRequest('email not updated');
+    const updateEmail = await this.userModel.findByIdAndUpdate(
+      user._id,
+      { email: email },
+      { new: true },
+    );
+    if (updateEmail) {
+      return updateEmail;
+    }
+    throw BadRequest('email not updated');
   }
 
   async updateUsername(username: string, user: User) {
-      const updateUsername = this.userModel.findByIdAndUpdate(
-        user._id,
-        { username: username },
-        { new: true },
-      );
-      if (updateUsername) {
-        return updateUsername;
-      }
-      throw BadRequest('username not updated');
+    const updateUsername = this.userModel.findByIdAndUpdate(
+      user._id,
+      { username: username },
+      { new: true },
+    );
+    if (updateUsername) {
+      return updateUsername;
+    }
+    throw BadRequest('username not updated');
   }
 
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
-      if (!resetPasswordDto.password) {
-        return BadRequest('Password is required');
-      }
-      if (resetPasswordDto.password.length < 5) {
-        return BadRequest(
-          'Password is too short. Atleast 6 characters required',
-        );
-      }
-      const saltOrRounds = 10;
-      const password = await bcrypt.hash(
-        resetPasswordDto.password,
-        saltOrRounds,
-      );
-      return await this.userModel.findOneAndUpdate(
-        { email: resetPasswordDto.email },
-        { password: password },
-      );
+    if (!resetPasswordDto.password) {
+      return BadRequest('Password is required');
+    }
+    if (resetPasswordDto.password.length < 5) {
+      return BadRequest('Password is too short. Atleast 6 characters required');
+    }
+    const saltOrRounds = 10;
+    const password = await bcrypt.hash(resetPasswordDto.password, saltOrRounds);
+    return await this.userModel.findOneAndUpdate(
+      { email: resetPasswordDto.email },
+      { password: password },
+    );
   }
 
   async updateProfilepic(user: User, file: Express.Multer.File) {
-      const uploadImage = await this.cloudinaryService.uploadImage(file);
-      console.log(uploadImage.url);
-      const update = this.userModel.findByIdAndUpdate(user._id, {
+    console.log(file);
+    const uploadImage = await this.cloudinaryService.uploadImage(file);
+    console.log(uploadImage.url);
+    const update = this.userModel.findByIdAndUpdate(
+      user._id,
+      {
         profilepic: uploadImage.url,
-      }, { new: true });
-      if (!update) {
-        return BadRequest('Not updated')
-      }
-      return update
+      },
+      { new: true },
+    );
+    if (!update) {
+      return BadRequest('Not updated');
+    }
+    console.log(update)
+    return update;
   }
   // update(id: number, updateAuthenticationDto: UpdateAuthenticationDto) {
   //   return `This action updates a #${id} authentication`;
   // }
 
   remove(id: string) {
-    return this.userModel.findByIdAndDelete(id)
+    return this.userModel.findByIdAndDelete(id);
   }
 
   async verifyUser(user: User) {
@@ -169,8 +168,8 @@ export class AuthenticationService {
         { email: user.email },
         { status: 'Verified' },
         { new: true },
-      );
+      ); 
     }
-    return BadRequest('User is verified already')
-}
+    return existingUser;
+  }
 }
