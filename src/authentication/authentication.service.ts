@@ -70,7 +70,9 @@ export class AuthenticationService {
     if (!isPasswordValid) {
       throw BadRequest('Wrong Password');
     }
-    await this.codeService.createCodeForEmail(existingUser.email, existingUser);
+    if (existingUser.status === 'Not Verified') {
+      await this.codeService.createCodeForEmail(existingUser.email, existingUser);
+    }
     return {
       user: existingUser,
       access_token: this.jwtService.sign({ user: existingUser }),

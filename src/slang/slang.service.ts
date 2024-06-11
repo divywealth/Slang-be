@@ -44,7 +44,9 @@ export class SlangService {
       .populate('user');
     if (!existingSlang) {
       return BadRequest(
-        'Slang not available you can try adding the slang if you know the meaning',
+        `Slang not available you can try adding the slang if you know the meaning.
+        If you added slang already, sorry for the incoveniece your slang hasn't been approved yet
+        try back later`,
       );
     }
     return existingSlang;

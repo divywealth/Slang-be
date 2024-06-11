@@ -17,7 +17,7 @@ import { UserService } from 'src/user/user.service';
 import { SlangService } from 'src/slang/slang.service';
 
 @Controller({
-  version: '1'
+  version: '1',
 })
 export class ReactionController {
   constructor(
@@ -28,17 +28,20 @@ export class ReactionController {
   ) {}
 
   @Post('reaction')
-  async create(@Body() createReactionDto: CreateReactionDto, @Req() request: Request) {
+  async create(
+    @Body() createReactionDto: CreateReactionDto,
+    @Req() request: Request,
+  ) {
     try {
       const token = request.headers.authorization.replace('Bearer ', '');
       const decodedToken = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET
-      })
+        secret: process.env.JWT_SECRET,
+      });
       const userToken = decodedToken.user._id;
-      const user = await this.userService.findOne(userToken)
+      const user = await this.userService.findOne(userToken);
       return this.reactionService.create(createReactionDto, user);
     } catch (error) {
-      throw error.message
+      throw error.message;
     }
   }
 
@@ -47,24 +50,44 @@ export class ReactionController {
     try {
       return this.reactionService.findAll();
     } catch (error) {
-      throw error.message
+      throw error.message;
     }
   }
 
   @Get('slang/:slangId/likes')
   async getSlangLikes(@Param('slangId') slangId: string) {
     try {
-      const slang = await this.slangService.findOne(slangId)
-    return this.reactionService.getSlangLikes(slang)
+      const slang = await this.slangService.findOne(slangId);
+      return this.reactionService.getSlangLikes(slang);
     } catch (error) {
-      throw error.message
+      throw error.message;
     }
   }
 
   @Get('slang/:slangId/dislikes')
   async getSlangDislikes(@Param('slangId') slangId: string) {
-    const slang = await this.slangService.findOne(slangId)
-    return this.reactionService.getSlangDislikes(slang)
+    const slang = await this.slangService.findOne(slangId);
+    return this.reactionService.getSlangDislikes(slang);
+  }
+
+  @Get('user/:slangId/reaction')
+  async userSlangReaction(
+    @Param('slangId') slangId: string,
+    @Req() request: Request,
+  ) {
+    try {
+      const token = request.headers.authorization.replace('Bearer ', '');
+      const decodedToken = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET,
+      });
+      const userToken = decodedToken.user._id;
+      const user = await this.userService.findOne(userToken);
+      const slang = await this.slangService.findOne(slangId);
+      console.log(slang);
+      return this.reactionService.userSlangReaction(slang, user);
+    } catch (error) {
+      throw error.message;
+    }
   }
 
   @Get('reaction/:id')
@@ -72,7 +95,7 @@ export class ReactionController {
     try {
       return this.reactionService.findOne(id);
     } catch (error) {
-      throw error.message
+      throw error.message;
     }
   }
 
@@ -84,16 +107,16 @@ export class ReactionController {
     try {
       return this.reactionService.update(+id, updateReactionDto);
     } catch (error) {
-      throw error.message
+      throw error.message;
     }
   }
 
   @Delete('reaction/:id')
   remove(@Param('id') id: string) {
     try {
-      return this.reactionService.remove(+id);
+      return this.reactionService.remove(id);
     } catch (error) {
-      throw error.message
+      throw error.message;
     }
   }
 }

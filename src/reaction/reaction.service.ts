@@ -35,27 +35,38 @@ export class ReactionService {
       return newReaction.save()
   }
 
-  getSlangLikes(slang: Slang) {
-      const slangLikes = this.reactionModel.find({
+  async getSlangLikes(slang: Slang) {
+      const slangLikes = await this.reactionModel.find({
         slang: slang._id,
-        react: { $ne: 'Dislikes'}
+        react: { $ne: 'Dislike'}
       })
-      if (slangLikes) {
+      if (slangLikes.length > 0) {
         return slangLikes
       }
-      return 'Slang has no likes'
+      return []
   }
-  getSlangDislikes(slang: Slang) {
-      const slangDislikes = this.reactionModel.find({
+  async getSlangDislikes(slang: Slang) {
+      const slangDislikes = await this.reactionModel.find({
         slang: slang._id,
-        react: { $ne: 'like'}
+        react: { $ne: 'Like'}
       })
-      if ( slangDislikes ) {
+      if ( slangDislikes.length > 0 ) {
         return slangDislikes
       }
-      return 'Slang has no dislikes'
+      return []
   }
 
+  async userSlangReaction (slang: Slang, user: User) {
+    const existingReaction = await this.reactionModel.findOne({
+      slang: slang._id,
+      user: user._id
+    })
+    if (existingReaction) {
+      return existingReaction
+    }
+    return "User has no reaction for this slang"
+
+  }
   getSlangReaction(slang: Slang) {
     try {
       
@@ -76,11 +87,7 @@ export class ReactionService {
     return `This action updates a #${id} reaction`;
   }
 
-  remove(id: number) {
-    try {
-
-    } catch (error) {
-      throw error.message
-    }
+  remove(id: string) {
+    return this.reactionModel.findByIdAndDelete(id)
   }
 }
