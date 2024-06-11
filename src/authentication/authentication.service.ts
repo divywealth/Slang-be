@@ -27,7 +27,7 @@ export class AuthenticationService {
       email: createAuthenticationDto.email,
     });
     if (existingUser) {
-      return BadRequest('User has an account');
+      return BadRequest('Email has an account');
     } else {
       const saltrounds: number = 10;
       const hashedPassword: string = await bcrypt.hash(
