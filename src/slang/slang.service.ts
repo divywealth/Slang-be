@@ -91,4 +91,8 @@ export class SlangService {
     }
     return "User has not added any slang yet";
   }
+  
+  async getPendingSlangs() {
+    return this.slangModel.find({status: 'Pending'})
+  }
 }

@@ -33,7 +33,10 @@ export class User {
   password: string;
 
   @Prop({ type: String, enum: STATUS, default: STATUS.NOTVERIFIED})
-  status: STATUS
+  status: STATUS;
+
+  @Prop({ required: true, enum: ['user', 'admin'], default: 'user' })
+  role: string;
 
   // @Prop({ default: Date.now })
   // createdAt!: Date;

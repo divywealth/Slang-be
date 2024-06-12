@@ -174,4 +174,8 @@ export class AuthenticationService {
     }
     return existingUser;
   }
+
+  async updateUserToAdmin(id: string) {
+   return await this.userModel.findByIdAndUpdate({_id: id}, {role: 'admin'}, {new: true})
+  }
 }

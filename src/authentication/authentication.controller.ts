@@ -157,4 +157,13 @@ export class AuthenticationController {
       throw error.message
     }
   }
+
+  @Patch('update-user/:id')
+  async updateUserToAdmin(@Param('id') id: string) {
+    try {
+      return this.authenticationService.updateUserToAdmin(id)
+    } catch (error) {
+      throw error.massage;
+    }
+  }
 }

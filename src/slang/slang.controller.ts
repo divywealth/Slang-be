@@ -129,4 +129,13 @@ export class SlangController {
       const user = await this.userService.findOne(newdecodeToken)
       return this.slangService.getUserPendingSlangs(user)
   }
+
+  @Get('pendingslangs')
+  async getPendingSlangs() {
+    try {
+      return this.slangService.getPendingSlangs()
+    } catch (error) {
+      throw error
+    }
+  }
 }

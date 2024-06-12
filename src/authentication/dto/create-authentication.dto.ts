@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsEmail, IsNotEmpty } from 'class-validator';
 
 export class CreateAuthenticationDto {
   @IsNotEmpty()
@@ -8,6 +8,7 @@ export class CreateAuthenticationDto {
   lastname: string;
 
   @IsNotEmpty()
+  @IsEmail({}, { message: 'Invalid email address'})
   email: string;
 
   @IsNotEmpty()
