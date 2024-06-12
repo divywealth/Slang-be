@@ -139,9 +139,7 @@ export class AuthenticationService {
   }
 
   async updateProfilepic(user: User, file: Express.Multer.File) {
-    console.log(file);
     const uploadImage = await this.cloudinaryService.uploadImage(file);
-    console.log(uploadImage.url);
     const update = this.userModel.findByIdAndUpdate(
       user._id,
       {
@@ -152,7 +150,6 @@ export class AuthenticationService {
     if (!update) {
       return BadRequest('Not updated');
     }
-    console.log(update)
     return update;
   }
   // update(id: number, updateAuthenticationDto: UpdateAuthenticationDto) {

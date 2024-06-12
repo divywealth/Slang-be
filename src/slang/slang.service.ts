@@ -15,7 +15,6 @@ export class SlangService {
   ) {}
 
   async create(createSlangDto: CreateSlangDto, user: User) {
-    console.log(user._id);
     const existingSlang = await this.slangModel.findOne({
       slang: createSlangDto.slang,
       status: { $ne: 'Pending' },
@@ -59,11 +58,16 @@ export class SlangService {
   }
 
   async approveSlang(id: string) {
-    return this.slangModel.findByIdAndUpdate(
+    const update = await this.slangModel.findByIdAndUpdate(
       { _id: id },
       { status: 'Approved' },
       { new: true },
     );
+    const deleteOthers = await this.slangModel.deleteMany({
+      slang: update.slang,
+      status: { $ne: 'Approved' },
+    });
+    return update;
   }
 
   async remove(id: string) {
@@ -78,7 +82,7 @@ export class SlangService {
     if (userPendingSlangs.length > 0) {
       return userPendingSlangs;
     }
-    return "User has no pending slang"
+    return 'User has no pending slang';
   }
 
   async getUserApprovedSlangs(user: User) {
@@ -89,10 +93,10 @@ export class SlangService {
     if (userApprovedSlangs.length > 0) {
       return userApprovedSlangs;
     }
-    return "User has not added any slang yet";
+    return 'User has not added any slang yet';
   }
-  
+
   async getPendingSlangs() {
-    return this.slangModel.find({status: 'Pending'})
+    return this.slangModel.find({ status: 'Pending' });
   }
 }
