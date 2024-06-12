@@ -7,7 +7,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
   app.enableCors({
     origin: [
-      "http://localhost:8080"
+      "http://localhost:8080",
+      "https://slang-web.vercel.app"
     ],
     methods: ['POST', 'PUT', 'DELETE', 'GET', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
